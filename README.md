@@ -165,6 +165,17 @@ Compose substitutes `JWT_SECRET_KEY` from your project **`.env`** for the `api` 
 - **bash:** `JWT_SECRET_KEY=your_hex_secret docker compose up -d`
 - **PowerShell:** `$env:JWT_SECRET_KEY='your_hex_secret'; docker compose up -d`
 
+## Railway (public URL)
+
+The Docker image listens on **`PORT`** (Railway sets this). If you see Railway’s “train has not arrived at the station” page:
+
+1. **Redeploy** after pulling the latest `Dockerfile` (must use `${PORT:-8000}` in the `uvicorn` command).
+2. **`tcl-ticket-api` service → Settings → Networking** — enable **Public networking** and **Generate domain** (or attach the domain you expect).
+3. **`tcl-ticket-api` → Deployments** — confirm the latest deploy is **Active** (not crashed). Open **View logs** if the status is failed: fix `DATABASE_URL`, missing env vars, or build errors.
+4. **`tcl-ticket-api` → Variables** — set `DATABASE_URL` to internal MySQL (e.g. host `mysql.railway.internal`, database `TestDB` after running `sql/ddl.sql`).
+
+Then open `https://<your-domain>/health` — expect `{"status":"ok"}`.
+
 ## Authentication
 
 1. `POST /auth/token` with form fields `username` and `password` (`application/x-www-form-urlencoded`).
