@@ -9,10 +9,11 @@ WORKDIR /app
 
 COPY pyproject.toml README.md ./
 COPY app ./app
+COPY run_uvicorn.py ./
 
 RUN pip install --upgrade pip && pip install .
 
-# Railway (and similar) inject PORT at runtime — must listen on it, not a fixed 8000.
+# Railway sets PORT at runtime. Use Python (not shell) so PORT is never passed as the literal "$PORT".
 EXPOSE 8000
 
-CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["python", "run_uvicorn.py"]

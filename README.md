@@ -167,14 +167,23 @@ Compose substitutes `JWT_SECRET_KEY` from your project **`.env`** for the `api` 
 
 ## Railway (public URL)
 
-The Docker image listens on **`PORT`** (Railway sets this). If you see Railway’s “train has not arrived at the station” page:
+The Docker image starts **`python run_uvicorn.py`**, which reads **`PORT`** from the environment (see `run_uvicorn.py`). Railway’s edge proxy must target **the same port** the process listens on.
 
-1. **Redeploy** after pulling the latest `Dockerfile` (must use `${PORT:-8000}` in the `uvicorn` command).
-2. **`tcl-ticket-api` service → Settings → Networking** — enable **Public networking** and **Generate domain** (or attach the domain you expect).
-3. **`tcl-ticket-api` → Deployments** — confirm the latest deploy is **Active** (not crashed). Open **View logs** if the status is failed: fix `DATABASE_URL`, missing env vars, or build errors.
-4. **`tcl-ticket-api` → Variables** — set `DATABASE_URL` to internal MySQL (e.g. host `mysql.railway.internal`, database `TestDB` after running `sql/ddl.sql`).
+### Quick checks
 
-Then open `https://<your-domain>/health` — expect `{"status":"ok"}`.
+1. **Use the exact URL** from **Settings → Networking** (e.g. `…-production.up.railway.app`). An older or guessed hostname will not hit this service.
+2. **Align `PORT` and Networking**
+   - **Deployments → View logs** and find the line like `Uvicorn running on http://0.0.0.0:####` — that `####` is what the app listens on.
+   - **Settings → Networking →** set the exposed / target port to **that same number**  
+     **or** set a service variable **`PORT=8000`** and set Networking to **8000** so they always match.
+3. **Redeploy** after pushing the latest `Dockerfile` + `run_uvicorn.py` (the container reads `PORT` in Python so Railway never passes a literal `$PORT` to Click).
+4. **Railway → Settings → Deploy** — if **Custom Start Command** is set to something like `uvicorn … --port $PORT`, **clear it** (leave empty) so Railway uses the image **`CMD`** (`python run_uvicorn.py`). Without a shell, `$PORT` is passed literally to Click and you get: `Invalid value for '--port': '$PORT'`.
+5. **`tcl-ticket-api` → Variables** — set `DATABASE_URL` to internal MySQL (e.g. `mysql.railway.internal:3306`, database `TestDB` after `sql/ddl.sql`). URL-encode the password in the URL if it has special characters.
+6. If you see **“Application failed to respond” (502)** or **“train has not arrived”** — open **Deployments → deploy logs** (runtime). Crashes before bind usually show a traceback (bad env, import error, invalid `DATABASE_URL`).
+
+### Expected result
+
+`https://<your-domain>/health` → `{"status":"ok"}`.
 
 ## Authentication
 
