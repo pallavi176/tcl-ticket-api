@@ -1,0 +1,74 @@
+{
+  "info": {
+    "name": "TCL Ticket API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "REST ticket API (FastAPI). Set collection variables: base_url, token (after Auth)."
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth — obtain JWT",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "username", "value": "demo" },
+            { "key": "password", "value": "demo", "type": "text" }
+          ]
+        },
+        "url": "{{base_url}}/auth/token"
+      }
+    },
+    {
+      "name": "POST /tickets",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Login failure on mobile\",\n  \"description\": \"Repro steps here\",\n  \"status\": \"open\",\n  \"priority\": \"HIGH\",\n  \"assigned_to\": \"alice\"\n}"
+        },
+        "url": "{{base_url}}/tickets"
+      }
+    },
+    {
+      "name": "GET /tickets/:id",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{base_url}}/tickets/1"
+      }
+    },
+    {
+      "name": "PUT /tickets/:id",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"in_progress\",\n  \"priority\": \"MEDIUM\"\n}"
+        },
+        "url": "{{base_url}}/tickets/1"
+      }
+    },
+    {
+      "name": "GET /health (no auth)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/health"
+      }
+    }
+  ]
+}
