@@ -84,6 +84,15 @@ async def test_health(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_root(client: AsyncClient) -> None:
+    r = await client.get("/")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["docs"] == "/docs"
+    assert body["health"] == "/health"
+
+
+@pytest.mark.asyncio
 async def test_list_tickets(client: AsyncClient) -> None:
     await client.post(
         "/tickets",

@@ -70,6 +70,11 @@ def create_app() -> FastAPI:
         """Load balancer / k8s probe."""
         return {"status": "ok"}
 
+    @application.get("/", tags=["health"])
+    async def root() -> dict[str, str]:
+        """Browser root; Railway health checks often hit `/`."""
+        return {"service": settings.app_name, "docs": "/docs", "health": "/health"}
+
     application.include_router(auth_router.router, prefix="")
     application.include_router(tickets_router.router, prefix="/tickets")
 

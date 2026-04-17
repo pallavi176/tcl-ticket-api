@@ -181,6 +181,12 @@ The Docker image starts **`python run_uvicorn.py`**, which reads **`PORT`** from
 5. **`tcl-ticket-api` → Variables** — set `DATABASE_URL` to internal MySQL (e.g. `mysql.railway.internal:3306`, database `TestDB` after `sql/ddl.sql`). URL-encode the password in the URL if it has special characters.
 6. If you see **“Application failed to respond” (502)** or **“train has not arrived”** — open **Deployments → deploy logs** (runtime). Crashes before bind usually show a traceback (bad env, import error, invalid `DATABASE_URL`).
 
+#### 502 but deploy logs say `Uvicorn running on …:8080` (or any port ≠ 8000)
+
+Railway sets **`PORT`** (often **8080**). Your app listens on that port. If **Settings → Networking** still says the service listens on **8000**, the proxy forwards to the **wrong** container port → **502**.
+
+**Fix:** Set Networking **target / container port** to the **same number** shown in the log (e.g. **8080**), or remove a fixed custom port if Railway offers automatic detection from `PORT`.
+
 ### Expected result
 
 `https://<your-domain>/health` → `{"status":"ok"}`.
